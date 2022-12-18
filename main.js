@@ -59,27 +59,33 @@ const posts = [
 //mi collego al container dell'HTML tramite una costante
 const container = document.getElementById('container');
 console.log(container);
+//array che contiene post a cui l'utente ha già messo like
+const userLikes = [];
 
 //tramite un forEach ciclo gli oggetti nell'array
 posts.forEach(function(elem,i,arr){
     //identifico il valore del singolo post in una costante
     const post = posts[i];
+    //destructoring proprietà dell'oggetto post
+    const {id, author,content, created, media, likes} = post;
+    //destructoring proprietà dell'oggetto author
+    const {name, image} = author;
     container.innerHTML += `
         <div class="post">
             <div class="post__header">
                 <div class="post-meta">                    
                     <div class="post-meta__icon">
-                        <img class="profile-pic" src="${post.author.image}" alt="Phil Mangione">                    
+                        <img class="profile-pic" src="${image}" alt="Phil Mangione">                    
                     </div>
                     <div class="post-meta__data">
-                        <div class="post-meta__author">${post.author.name}</div>
-                        <div class="post-meta__time">${post.created}</div>
+                        <div class="post-meta__author">${name}</div>
+                        <div class="post-meta__time">${created}</div>
                     </div>                    
                 </div>
             </div>
-            <div class="post__text">${post.content}</div>
+            <div class="post__text">${content}</div>
             <div class="post__image">
-                <img src="${post.media}" alt="">
+                <img src="${media}" alt="">
             </div>
             <div class="post__footer">
                 <div class="likes js-likes">
@@ -90,9 +96,56 @@ posts.forEach(function(elem,i,arr){
                         </a>
                     </div>
                     <div class="likes__counter">
-                        Piace a <b id="like-counter-1" class="js-likes-counter">${post.likes}</b> persone
+                        Piace a <b id="like-counter-${id}" class="js-likes-counter">${likes}</b> persone
                     </div>
                 </div> 
             </div>            
-        </div>`
-})
+        </div>`;
+    
+    });
+
+    //funzione per aggiungere la classe liked al bottone cliccato
+    //
+
+    const likeButtons = document.getElementsByClassName('js-like-button');
+    const likeCounters = document.getElementsByClassName('js-likes-counter');
+
+    //aggiungiamo ad ogni pulsante l'event listner
+    for(let key in likeButtons){
+        const like =likeButtons[key];
+        like.addEventListener('click', function(e) {
+            e.preventDefault(); //impedisce ai tag a di reindirizzarci
+
+            if(!like.classList.contains('like-button--liked')){
+                like.classList.add('like-button--liked');
+
+                //recupero il contatore tramite la posizione della key
+                const thisCounter = likeCounters[key];
+                //leggo il valore attuae del contatore
+                const number = parseInt(thisCounter.innerHTML);
+                //incremento il valore del contatore
+                thisCounter.innerHTML = number + 1;
+
+                const likedPost = posts[key];
+
+                likedPost.likes++;
+            } else {
+                //togliamo il like in caso di ri-click
+                like.classList.remove('like-button--liked');
+                //recupero il contatore tramite la posizione della key
+                const thisCounter = likeCounters[key];
+                //leggo il valore attuae del contatore
+                const number = parseInt(thisCounter.innerHTML);
+                //decremento il valore del contatore
+                thisCounter.innerHTML = number - 1;
+
+                //decremento il numero di likedall'array degli oggetti
+                const likedPost = posts[key];
+
+                likedPost.likes--;
+            }
+
+        })
+    }
+    
+
